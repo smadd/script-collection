@@ -30,7 +30,7 @@ Let's assume I have a directory _old-photos_ with multiple sub-directorys and pi
         + picture01 0.png [md5: 5aa7...] (yes with whitespace)
         - subdir011
             + picture0111.png [md5: 65d6...]
-    - subdir01
+    - subdir02
         + picture021.png [md5: 1d83...]
 
 ```sh
