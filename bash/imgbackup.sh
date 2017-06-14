@@ -7,41 +7,48 @@
 
 # FUNCTIONS
 doFile() {
-    local file=$1
+    local file="$1"
     local date=$(date +%s -r $file)
-    local extension=${file#*.}
-	local md5=$(md5sum "$1" | cut -c 1-32)
+    local filename=$(basename "$file")
+    local extension="${filename##*.}"
+	local md5=$(md5sum "$file" | cut -c 1-32)
     local newfile="./$outputDir/$md5.$extension"
+
     if [ ! -f $newfile  ];
     then
-        cp $file $newfile
-        touch -m -d @$date $newfile
+        cp "$file" "$newfile"
+        touch -m -d "@$date" "$newfile"
     else
         echo "did not copy $file (filehash already existed)"
     fi
 }
 
 # START
-if [ -z "$1" ]; then
-    echo "no arguments supplied"
-    echo "usage: sortImg.sh <output-folder>"
+if [ "$#" -ne 2 ]; then
+    echo "usage: sortImg.sh <input directory> <output directory>"
     exit 1
 fi
 
-# create directory from the first parameter, if not already present
-if [ ! -d "$1" ]; then
-  mkdir "$1"
-fi
-
-outputDir=$1
+inputDir="$1"
+outputDir="$2"
 
 echo "This process may take some time."
+echo "Files with spaces will fail."
+
+read -p "Do you want to permantly replace spaces in files with '_' in $inputDir? [y/n]? " CONT
+if [ "$CONT" = "y" ]; then
+  find "$inputDir" -depth -name "* *" -execdir rename 's/ /_/g' "{}" \;
+fi
+
+# create directory from the first parameter, if not already present
+if [ ! -d "$outputDir" ]; then
+  mkdir "$outputDir"
+fi
 
 #run doFile for each file in all sub-directorys
-files="$(find -L */* -type f)"
+files="$(find -L "$inputDir" -type f)"
 echo "$files" | while read file; do
-	doFile $file
+	doFile "$file"
 done
 
 echo "Finished processing $(echo -n "$files \n" | wc -l) files."
-
